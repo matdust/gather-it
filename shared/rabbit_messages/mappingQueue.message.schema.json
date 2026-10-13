@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "gather.it/shared/rabbit_messages/mappingQueue.message.schema.json",
   "title": "RabbitMQ MappingQueue Message",
-  "description": "Message body consumed by Comulator from mapping_exchange -> MappingQueue.",
+  "description": "Message body published by the scrapers to mapping_exchange -> MappingQueue and consumed by binder.",
   "type": "array",
   "items": {
     "$ref": "#/$defs/job"

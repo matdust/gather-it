@@ -37,17 +37,6 @@ services:
       timeout: 5s
       retries: 5
 
-  gatherit:
-    build:
-      context: ../Comulator
-      dockerfile: Dockerfile
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-    environment:
-      - RABBITMQ_URL=amqp://rabbituser:rabbitpass@rabbitmq:5672/%2f
-      - KAFKA_URL=kafka:9092
-
   postgres-jobads:
     build:
       context: ../Database
