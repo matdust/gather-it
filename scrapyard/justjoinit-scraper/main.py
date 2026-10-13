@@ -74,24 +74,32 @@ async def healthcheck() -> PlainTextResponse:
 
 
 @app.post("/register")
-async def register():
+async def register() -> PlainTextResponse:
     try:
-        if await register_scraper():
-            return {"status": 200, "message": "Registered with scheduler."}
-        return {"status": 500, "message": "Scheduler rejected registration."}
+        registered = await register_scraper()
     except httpx.HTTPError:
         logger.exception("Scheduler registration failed")
-        return {"status": 500, "message": "Could not reach scheduler."}
+        return PlainTextResponse("Could not reach scheduler.", status_code=502)
+
+    if not registered:
+        return PlainTextResponse("Scheduler rejected registration.", status_code=502)
+
+    return PlainTextResponse("Registered with scheduler.")
 
 
 @app.get("/scrap")
-async def scrap():
+async def scrap() -> PlainTextResponse:
     try:
         offers_count = await scraper.start_scraping()
-        return {
-            "status": 200,
-            "message": f"Scraping completed successfully. Got {offers_count} offers.",
-        }
+    except httpx.HTTPError:
+        logger.exception("Fetching offers from JustJoinIt failed")
+        return PlainTextResponse(
+            "Fetching offers from JustJoinIt failed.", status_code=502
+        )
     except Exception:
         logger.exception("Scraping failed")
-        return {"status": 500, "message": "Scraping failed."}
+        return PlainTextResponse("Scraping failed.", status_code=500)
+
+    return PlainTextResponse(
+        f"Scraping completed successfully. Got {offers_count} offers."
+    )
