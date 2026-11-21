@@ -19,7 +19,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 SCRAPER_ID = "theprotocolit-scraper-python"
-SCRAPE_INTERVAL_SECONDS = 600
+SCRAPE_INTERVAL_SECONDS = 36000
 REGISTRATION_ATTEMPTS = 5
 REGISTRATION_RETRY_DELAY_SECONDS = 15
 

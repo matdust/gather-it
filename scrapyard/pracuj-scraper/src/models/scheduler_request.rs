@@ -13,7 +13,7 @@ impl RegisterScraper {
             id: "pracuj-pl-scraper-rust".to_string(),
             endpoint: std::env::var("SCRAPER_ENDPOINT")
                 .expect("SCRAPER_ENDPOINT environment variable is not set"),
-            interval: 60,
+            interval: 36000,
         }
     }
 }
