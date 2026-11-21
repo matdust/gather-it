@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Deserialize, sqlx::Type, Clone, Copy)]
+#[derive(Debug, Serialize, Deserialize, sqlx::Type, Clone, Copy, PartialEq, Eq, Hash)]
 #[serde(try_from = "u8")]
 #[sqlx(type_name = "job_site", rename_all = "snake_case")]
 pub enum JobSite {

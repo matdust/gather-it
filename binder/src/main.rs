@@ -30,7 +30,7 @@ async fn main() -> color_eyre::Result<()> {
         config().rabbitmq_queue_name
     );
 
-    bind::bind(&pool, consumer).await?;
+    bind::bind(&pool, &channel, consumer).await?;
 
     channel.close(200, "Goodbye".into()).await?;
     conn.close(200, "Goodbye".into()).await?;
@@ -76,6 +76,13 @@ async fn setup_rmq() -> color_eyre::Result<(lapin::Connection, lapin::Channel, l
     let conn = lapin::Connection::connect(&config().rabbitmq_url, conn_options).await?;
 
     let channel = conn.create_channel().await?;
+
+    channel
+        .basic_qos(
+            bind::PREFETCH_COUNT,
+            lapin::options::BasicQosOptions::default(),
+        )
+        .await?;
 
     let consumer_options = lapin::options::BasicConsumeOptions::default();
 

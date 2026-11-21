@@ -17,7 +17,8 @@ CREATE TABLE job_ad (
     job_site job_site NOT NULL,
     slug VARCHAR(500) NOT NULL,
     expired_at TIMESTAMP WITH TIME ZONE,
-    published_at TIMESTAMP WITH TIME ZONE
+    published_at TIMESTAMP WITH TIME ZONE,
+    UNIQUE (external_id, job_site)
 );
 
 CREATE TABLE skill (

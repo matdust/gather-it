@@ -110,13 +110,14 @@ impl JobAdRepository {
         Ok(result)
     }
 
-    pub async fn insert<'e, E>(executor: E, job_ad: &NewJobAd) -> Result<i32, sqlx::Error>
+    pub async fn insert<'e, E>(executor: E, job_ad: &NewJobAd) -> Result<Option<i32>, sqlx::Error>
     where
         E: sqlx::Executor<'e, Database = sqlx::Postgres>,
     {
         let row = sqlx::query_scalar!(
             r#"INSERT INTO job_ad (external_id, title, offer_status, workplace_type, experience_level, company_id, job_site, slug, published_at)
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+            ON CONFLICT (external_id, job_site) DO NOTHING
             RETURNING job_ad_id"#,
             job_ad.external_id,
             job_ad.title,
@@ -128,7 +129,7 @@ impl JobAdRepository {
             job_ad.slug,
             job_ad.published_at,
         )
-        .fetch_one(executor)
+        .fetch_optional(executor)
         .await?;
 
         Ok(row)

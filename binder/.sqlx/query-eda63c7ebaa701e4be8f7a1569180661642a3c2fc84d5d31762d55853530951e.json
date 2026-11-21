@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "INSERT INTO job_ad (external_id, title, offer_status, workplace_type, experience_level, company_id, job_site, slug, published_at)\n            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)\n            RETURNING job_ad_id",
+  "query": "INSERT INTO job_ad (external_id, title, offer_status, workplace_type, experience_level, company_id, job_site, slug, published_at)\n            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)\n            ON CONFLICT (external_id, job_site) DO NOTHING\n            RETURNING job_ad_id",
   "describe": {
     "columns": [
       {
@@ -87,5 +87,5 @@
       false
     ]
   },
-  "hash": "16ad526b36d8f246df9f44a3d837b98a0823517a9eaf606559190db359d96b45"
+  "hash": "eda63c7ebaa701e4be8f7a1569180661642a3c2fc84d5d31762d55853530951e"
 }
