@@ -4,8 +4,10 @@
 
 mod bind;
 mod config;
+mod metrics;
 mod models;
 mod repositories;
+mod telemetry;
 
 use lapin::types::FieldTable;
 use sqlx::{Postgres, postgres::PgPoolOptions};
@@ -17,7 +19,7 @@ use crate::config::config;
 #[tokio::main]
 async fn main() -> color_eyre::Result<()> {
     config();
-    tracing_subscriber::fmt::init();
+    let _telemetry = telemetry::init()?;
     // let _guard = setup_tracing();
     info!("Starting application");
 

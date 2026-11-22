@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use crate::{
+    metrics,
     models::{
         pracujpl_response::JobOffer,
         rmq_message::{CommonJobAdDto, map_offer},
@@ -11,7 +12,7 @@ use color_eyre::eyre::{self, Result, bail};
 use scraper::{Html, Selector};
 use serde_json::Value;
 use tokio::{sync::Semaphore, task::JoinSet};
-use tracing::{info, warn};
+use tracing::{Instrument, info, warn};
 use wreq::Client;
 use wreq_util::Emulation;
 
@@ -21,12 +22,16 @@ const MAX_PAGES_SELECTOR: &str = "button.listing_n19df7xb:nth-child(6)";
 const SCRIPT_DATA_SELECTOR: &str = "script#__NEXT_DATA__";
 
 pub async fn start_scraping() -> (axum::http::StatusCode, String) {
-    match do_scraping().await {
+    let start = std::time::Instant::now();
+    let result = do_scraping().await;
+    metrics::record_run(result.is_ok(), start.elapsed());
+    match result {
         Ok(msg) => (axum::http::StatusCode::OK, msg),
         Err(e) => (axum::http::StatusCode::INTERNAL_SERVER_ERROR, e.to_string()),
     }
 }
 
+#[tracing::instrument]
 async fn do_scraping() -> Result<String> {
     let client = build_client()?;
     let channel = rabbitmq::setup_rmq().await?;
@@ -50,10 +55,13 @@ async fn do_scraping() -> Result<String> {
         let client = client.clone();
         let url = build_url(page_number);
         let sem = semaphore.clone();
-        set.spawn(async move {
-            let _permit = sem.acquire().await.unwrap();
-            fetch_page(&client, &url).await
-        });
+        set.spawn(
+            async move {
+                let _permit = sem.acquire().await.unwrap();
+                fetch_page(&client, &url).await
+            }
+            .in_current_span(),
+        );
     }
 
     let mut pages = Vec::new();
@@ -76,6 +84,7 @@ async fn do_scraping() -> Result<String> {
 
     let elapsed = start_timer.elapsed();
     info!("scraped: {} in {}ms", offers.len(), elapsed.as_millis());
+    metrics::record_offers_scraped(offers.len());
 
     let offers: Vec<CommonJobAdDto> = offers.iter().map(map_offer).collect();
 
@@ -97,17 +106,21 @@ fn build_url(page_number: usize) -> String {
     format!("{BASE_URL}?pn={page_number}")
 }
 
+#[tracing::instrument(skip(client))]
 async fn fetch_page(client: &Client, url: &str) -> Result<String> {
     info!(url, "fetching page");
 
     let Ok(body) = client.get(url).send().await else {
+        metrics::record_page_fetch(false);
         bail!("failed to fetch page");
     };
 
     let Ok(body) = body.text().await else {
+        metrics::record_page_fetch(false);
         bail!("failed to read response body");
     };
 
+    metrics::record_page_fetch(true);
     Ok(body)
 }
 

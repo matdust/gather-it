@@ -5,6 +5,7 @@ use tracing::{error, info};
 
 use crate::{
     enums::work_status::WorkStatus,
+    metrics,
     models::{work::PendingWork, work_log::WorkLog},
     repositories::{
         work::{self, update_work_schedule},
@@ -52,7 +53,9 @@ pub async fn start_scheduler(pool: sqlx::Pool<Postgres>) {
                 let _permit = permit;
                 let new_time =
                     pw.scheduled_time + std::time::Duration::from_secs(pw.interval as u64);
+                let start = std::time::Instant::now();
                 let log = do_work(&client, &pw).await;
+                metrics::record_trigger(&pw.external_id, &log.status, start.elapsed());
                 if update_work_schedule(&executor, pw.id, new_time)
                     .await
                     .is_err()
@@ -70,9 +73,19 @@ pub async fn start_scheduler(pool: sqlx::Pool<Postgres>) {
 }
 
 #[allow(clippy::cast_possible_truncation)]
+#[tracing::instrument(
+    name = "trigger worker",
+    skip_all,
+    fields(otel.kind = "client", worker = %pw.external_id, url.full = %pw.endpoint)
+)]
 async fn do_work(client: &reqwest::Client, pw: &PendingWork) -> WorkLog {
     let start = std::time::Instant::now();
-    match client.get(&pw.endpoint).send().await {
+    match client
+        .get(&pw.endpoint)
+        .headers(crate::telemetry::trace_headers())
+        .send()
+        .await
+    {
         Ok(response) => {
             let elapsed = start.elapsed().as_secs() as i32;
             if response.status().is_success() {

@@ -16,23 +16,14 @@ public static class DependencyInjection
         var connectionString = configuration.GetConnectionString("Postgres")
             ?? throw new InvalidOperationException("ConnectionStrings:Postgres is not configured.");
 
-        var dataSourceBuilder = new NpgsqlDataSourceBuilder(connectionString);
-        dataSourceBuilder.MapEnum<JobSite>();
-        dataSourceBuilder.MapEnum<ContractType>();
-        dataSourceBuilder.MapEnum<WorkplaceType>();
-        dataSourceBuilder.MapEnum<ExperienceLevel>();
-        dataSourceBuilder.MapEnum<OfferStatus>();
-        var dataSource = dataSourceBuilder.Build();
-
-        // Register the data source as a singleton
-        services.AddSingleton(dataSource);
-
-        services.AddDbContext<ReadApiDbContext>((serviceProvider, options) =>
-        {
-            var ds = serviceProvider.GetRequiredService<NpgsqlDataSource>();
-            options.UseNpgsql(ds)
-                .UseSnakeCaseNamingConvention();
-        });
+        services.AddDbContext<ReadApiDbContext>(options =>
+            options.UseNpgsql(connectionString, npgsql => npgsql
+                    .MapEnum<JobSite>()
+                    .MapEnum<ContractType>()
+                    .MapEnum<WorkplaceType>()
+                    .MapEnum<ExperienceLevel>()
+                    .MapEnum<OfferStatus>())
+                .UseSnakeCaseNamingConvention());
 
         services.AddScoped<IJobAdReadRepository, JobAdReadRepository>();
 

@@ -3,3 +3,8 @@ uvicorn>=0.32
 httpx>=0.27
 aio-pika>=9.4
 python-dotenv>=1.0
+opentelemetry-distro==0.66b2
+opentelemetry-exporter-otlp-proto-http==1.45.2
+opentelemetry-instrumentation-aio-pika==0.66b2
+opentelemetry-instrumentation-fastapi==0.66b2
+opentelemetry-instrumentation-httpx==0.66b2

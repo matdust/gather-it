@@ -15,9 +15,11 @@ fn http_client() -> &'static reqwest::Client {
     HTTP_CLIENT.get_or_init(reqwest::Client::new)
 }
 
+mod metrics;
 mod models;
 mod rabbitmq;
 mod scraper;
+mod telemetry;
 
 const HOST: &str = "0.0.0.0";
 const PORT: u16 = 8800;
@@ -28,13 +30,14 @@ const REGISTRATION_RETRY_LIMIT: usize = 5;
 async fn main() -> Result<()> {
     color_eyre::install()?;
     let _ = dotenvy::dotenv();
-    tracing_subscriber::fmt::init();
+    let _telemetry = telemetry::init()?;
     info!("Starting pracuj.pl scraper...");
 
     let app = Router::new()
         .route("/register", axum::routing::post(register_scraper))
-        .route("/healthcheck", axum::routing::get(healthcheck))
-        .route("/scrap", axum::routing::get(crate::scraper::start_scraping));
+        .route("/scrap", axum::routing::get(crate::scraper::start_scraping))
+        .route_layer(axum::middleware::from_fn(telemetry::trace_http))
+        .route("/healthcheck", axum::routing::get(healthcheck));
 
     let listener = tokio::net::TcpListener::bind(format!("{HOST}:{PORT}"))
         .await
@@ -91,6 +94,11 @@ async fn register_scraper() -> (axum::http::StatusCode, String) {
                 (
                     axum::http::StatusCode::OK,
                     "Scraper registered successfully".to_string(),
+                )
+            } else if resp.status() == reqwest::StatusCode::CONFLICT {
+                (
+                    axum::http::StatusCode::OK,
+                    "Scraper already registered".to_string(),
                 )
             } else {
                 (

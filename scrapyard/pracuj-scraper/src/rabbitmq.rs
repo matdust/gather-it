@@ -32,6 +32,7 @@ pub async fn setup_rmq() -> Result<Channel> {
     Ok(channel)
 }
 
+#[tracing::instrument(skip_all, fields(job_ads = offers.len()))]
 pub async fn publish_offers(channel: &Channel, offers: &[CommonJobAdDto]) -> Result<()> {
     let exchange = std::env::var("RABBITMQ_EXCHANGE").expect("RABBITMQ_EXCHANGE must be set");
     let routing_key =
@@ -51,6 +52,7 @@ pub async fn publish_offers(channel: &Channel, offers: &[CommonJobAdDto]) -> Res
         .await?;
 
     info!("Published {} job ads to RabbitMQ", offers.len());
+    crate::metrics::record_offers_published(offers.len());
 
     Ok(())
 }

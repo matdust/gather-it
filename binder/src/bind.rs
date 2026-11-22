@@ -7,6 +7,7 @@ use sqlx::{Pool, Postgres};
 use tokio_stream::StreamExt;
 use tracing::{info, warn};
 
+use crate::metrics;
 use crate::models::company::NewCompanySnapshot;
 use crate::models::job_ad::NewJobAd;
 use crate::models::messages::CommonJobAdDto;
@@ -64,6 +65,7 @@ pub async fn bind(
                     Err(e) => {
                         std::fs::write(format!("{}/{}.txt", FAILED_PAYLOAD_DIR, chrono::Utc::now().timestamp()), payload)?;
                         warn!("Failed to deserialize payload: {e}");
+                        metrics::record_message(false, 0);
                         delivery
                             .ack(BasicAckOptions::default())
                             .await?;
@@ -72,6 +74,7 @@ pub async fn bind(
                 };
 
                 info!("Received {} job ads", job_ads.len());
+                metrics::record_message(true, job_ads.len());
 
                 buffer.job_ads.extend(job_ads);
                 buffer.deliveries += 1;
@@ -79,7 +82,7 @@ pub async fn bind(
 
                 if buffer.job_ads.len() >= MAX_BUFFER_SIZE || buffer.deliveries >= PREFETCH_COUNT {
                     info!("Buffer full, flushing {} job ads to database", buffer.job_ads.len());
-                    flush(pool, channel, &mut buffer).await?;
+                    flush(pool, channel, &mut buffer, "buffer_full").await?;
                 }
             }
             () = tokio::time::sleep(IDLE_TIMEOUT) => {
@@ -88,7 +91,7 @@ pub async fn bind(
                 }
 
                 info!("Idle timeout reached, flushing {} job ads to database", buffer.job_ads.len());
-                flush(pool, channel, &mut buffer).await?;
+                flush(pool, channel, &mut buffer, "idle").await?;
             }
         }
     }
@@ -96,19 +99,26 @@ pub async fn bind(
     Ok(())
 }
 
+#[tracing::instrument(skip_all, fields(trigger = trigger, job_ads = buffer.job_ads.len(), deliveries = buffer.deliveries))]
 async fn flush(
     pool: &Pool<Postgres>,
     channel: &lapin::Channel,
     buffer: &mut Buffer,
+    trigger: &'static str,
 ) -> color_eyre::Result<()> {
     let Some(delivery_tag) = buffer.last_delivery_tag else {
         return Ok(());
     };
 
     if !buffer.job_ads.is_empty() {
+        let start = std::time::Instant::now();
         let mut backoff = RETRY_BACKOFF_MIN;
         let mut failures_with_db_up = 0;
-        while let Err(e) = upsert_data(&buffer.job_ads, pool).await {
+        let inserted = loop {
+            let e = match upsert_data(&buffer.job_ads, pool).await {
+                Ok(inserted) => break inserted,
+                Err(e) => e,
+            };
             // a failure while the database answers is caused by the batch, not by an outage
             if database_is_up(pool).await {
                 failures_with_db_up += 1;
@@ -122,9 +132,16 @@ async fn flush(
                 buffer.job_ads.len(),
                 backoff.as_secs()
             );
+            metrics::record_flush_retry();
             tokio::time::sleep(backoff).await;
             backoff = (backoff * 2).min(RETRY_BACKOFF_MAX);
-        }
+        };
+        metrics::record_flush(
+            trigger,
+            start.elapsed(),
+            inserted,
+            buffer.job_ads.len() - inserted,
+        );
     }
 
     channel
@@ -142,7 +159,8 @@ async fn database_is_up(pool: &Pool<Postgres>) -> bool {
 }
 
 #[allow(clippy::too_many_lines)]
-async fn upsert_data(data: &[CommonJobAdDto], pool: &Pool<Postgres>) -> Result<(), sqlx::Error> {
+#[tracing::instrument(skip_all, fields(job_ads = data.len()))]
+async fn upsert_data(data: &[CommonJobAdDto], pool: &Pool<Postgres>) -> Result<usize, sqlx::Error> {
     let start = std::time::Instant::now();
     let mut tx = pool.begin().await?;
     let external_ids: Vec<String> = data.iter().map(|d| d.id.clone()).collect();
@@ -209,6 +227,7 @@ async fn upsert_data(data: &[CommonJobAdDto], pool: &Pool<Postgres>) -> Result<(
         .filter(|ja| seen.insert((ja.source_site, ja.id.as_str())))
         .collect();
 
+    let mut inserted = 0;
     // main uspert loop
     for job_ad_to_insert in new_data.iter().copied() {
         let mut new_job_ad = NewJobAd::from_message(job_ad_to_insert);
@@ -221,6 +240,7 @@ async fn upsert_data(data: &[CommonJobAdDto], pool: &Pool<Postgres>) -> Result<(
         let Some(new_job_ad_id) = JobAdRepository::insert(&mut *tx, &new_job_ad).await? else {
             continue;
         };
+        inserted += 1;
 
         // If no company exists, check if a snapshot exists
         if new_job_ad.company_id.is_none() {
@@ -281,8 +301,8 @@ async fn upsert_data(data: &[CommonJobAdDto], pool: &Pool<Postgres>) -> Result<(
     info!(
         "Upsert complete: {} total, {} new in {}ms.",
         data.len(),
-        new_data.len(),
+        inserted,
         start.elapsed().as_millis()
     );
-    Ok(())
+    Ok(inserted)
 }

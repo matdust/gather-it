@@ -12,4 +12,4 @@ COPY . .
 USER app
 
 EXPOSE 8801
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8801"]
+CMD ["sh", "-c", "exec ${OTEL_EXPORTER_OTLP_ENDPOINT:+opentelemetry-instrument} uvicorn main:app --host 0.0.0.0 --port 8801"]

@@ -15,9 +15,11 @@ use crate::{
 
 mod config;
 mod enums;
+mod metrics;
 mod models;
 mod repositories;
 mod scheduler;
+mod telemetry;
 
 const HOST: &str = "0.0.0.0";
 const PORT: u16 = 8101;
@@ -29,7 +31,7 @@ struct AppState {
 
 #[tokio::main]
 async fn main() {
-    tracing_subscriber::fmt::init();
+    let _telemetry = telemetry::init().expect("failed to set up OpenTelemetry");
     config::config();
     tracing::info!("Starting scheduler...");
 
@@ -47,8 +49,9 @@ async fn main() {
     info!("Connected to PostgreSQL database");
 
     let app = Router::new()
-        .route("/healthcheck", get(healthcheck))
         .route("/register", post(register))
+        .route_layer(axum::middleware::from_fn(telemetry::trace_http))
+        .route("/healthcheck", get(healthcheck))
         .with_state(shared_state);
 
     let listener = tokio::net::TcpListener::bind(format!("{HOST}:{PORT}"))

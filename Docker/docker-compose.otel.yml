@@ -1,0 +1,52 @@
+x-otel-env: &otel-env
+  OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-lgtm:4318
+  OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
+  OTEL_RESOURCE_ATTRIBUTES: service.namespace=gather-it,deployment.environment=docker
+
+services:
+  otel-lgtm:
+    image: grafana/otel-lgtm:0.41.1
+    restart: always
+    ports:
+      - "3001:3000"
+      - "4317:4317"
+      - "4318:4318"
+    volumes:
+      - otel-lgtm-data:/data
+
+  jobReadApi:
+    environment:
+      <<: *otel-env
+      OTEL_SERVICE_NAME: job-read-api
+
+  scheduler:
+    environment:
+      <<: *otel-env
+      OTEL_SERVICE_NAME: scheduler
+
+  binder:
+    environment:
+      <<: *otel-env
+      OTEL_SERVICE_NAME: binder
+
+  pracuj-scraper:
+    environment:
+      <<: *otel-env
+      OTEL_SERVICE_NAME: pracuj-scraper
+
+  justjoinit-scraper:
+    environment:
+      <<: *otel-env
+      OTEL_SERVICE_NAME: justjoinit-scraper
+      OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED: "true"
+      OTEL_PYTHON_FASTAPI_EXCLUDED_URLS: healthcheck
+
+  theprotocolit-scraper:
+    environment:
+      <<: *otel-env
+      OTEL_SERVICE_NAME: theprotocolit-scraper
+      OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED: "true"
+      OTEL_PYTHON_FASTAPI_EXCLUDED_URLS: healthcheck
+
+volumes:
+  otel-lgtm-data:
