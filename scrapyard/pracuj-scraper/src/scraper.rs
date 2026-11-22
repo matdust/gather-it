@@ -12,13 +12,13 @@ use color_eyre::eyre::{self, Result, bail};
 use scraper::{Html, Selector};
 use serde_json::Value;
 use tokio::{sync::Semaphore, task::JoinSet};
-use tracing::{Instrument, info, warn};
+use tracing::{Instrument, error, info, warn};
 use wreq::Client;
 use wreq_util::Emulation;
 
 const BASE_URL: &str = "https://it.pracuj.pl/praca";
 const PAGES_PER_BUFFER: usize = 10;
-const MAX_PAGES_SELECTOR: &str = "button.listing_n19df7xb:nth-child(6)";
+const MAX_PAGES_SELECTOR: &str = r#"[data-test="top-pagination-max-page-number"]"#;
 const SCRIPT_DATA_SELECTOR: &str = "script#__NEXT_DATA__";
 
 pub async fn start_scraping() -> (axum::http::StatusCode, String) {
@@ -27,7 +27,10 @@ pub async fn start_scraping() -> (axum::http::StatusCode, String) {
     metrics::record_run(result.is_ok(), start.elapsed());
     match result {
         Ok(msg) => (axum::http::StatusCode::OK, msg),
-        Err(e) => (axum::http::StatusCode::INTERNAL_SERVER_ERROR, e.to_string()),
+        Err(e) => {
+            error!("scraping failed: {e}");
+            (axum::http::StatusCode::INTERNAL_SERVER_ERROR, e.to_string())
+        }
     }
 }
 
@@ -132,9 +135,10 @@ fn get_number_of_pages(html: &Html) -> Result<usize> {
     Ok(html
         .select(&selector)
         .next()
-        .ok_or_else(|| eyre::eyre!("element not found"))?
+        .ok_or_else(|| eyre::eyre!("pagination element `{MAX_PAGES_SELECTOR}` not found"))?
         .text()
         .collect::<String>()
+        .trim()
         .parse::<usize>()?)
 }
 
@@ -146,7 +150,7 @@ fn get_data_from_script_tag(html: &Html) -> Result<Vec<JobOffer>> {
     let data = html
         .select(&selector)
         .next()
-        .ok_or_else(|| eyre::eyre!("element not found"))?
+        .ok_or_else(|| eyre::eyre!("`{SCRIPT_DATA_SELECTOR}` not found"))?
         .inner_html();
 
     let v: Value = serde_json::from_str(&data)?;
