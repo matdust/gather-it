@@ -3,6 +3,10 @@ x-otel-env: &otel-env
   OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
   OTEL_RESOURCE_ATTRIBUTES: service.namespace=gather-it,deployment.environment=docker
 
+x-otel-depends: &otel-depends
+  otel-lgtm:
+    condition: service_healthy
+
 services:
   otel-lgtm:
     image: grafana/otel-lgtm:0.41.1
@@ -13,28 +17,36 @@ services:
       - "4318:4318"
     volumes:
       - otel-lgtm-data:/data
+    healthcheck:
+      start_period: 1m
+      start_interval: 2s
 
   jobReadApi:
+    depends_on: *otel-depends
     environment:
       <<: *otel-env
       OTEL_SERVICE_NAME: job-read-api
 
   scheduler:
+    depends_on: *otel-depends
     environment:
       <<: *otel-env
       OTEL_SERVICE_NAME: scheduler
 
   binder:
+    depends_on: *otel-depends
     environment:
       <<: *otel-env
       OTEL_SERVICE_NAME: binder
 
   pracuj-scraper:
+    depends_on: *otel-depends
     environment:
       <<: *otel-env
       OTEL_SERVICE_NAME: pracuj-scraper
 
   justjoinit-scraper:
+    depends_on: *otel-depends
     environment:
       <<: *otel-env
       OTEL_SERVICE_NAME: justjoinit-scraper
@@ -42,6 +54,7 @@ services:
       OTEL_PYTHON_FASTAPI_EXCLUDED_URLS: healthcheck
 
   theprotocolit-scraper:
+    depends_on: *otel-depends
     environment:
       <<: *otel-env
       OTEL_SERVICE_NAME: theprotocolit-scraper
