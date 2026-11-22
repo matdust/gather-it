@@ -12,7 +12,7 @@ def map_offer(offer: dict) -> dict:
         "Title": offer["title"],
         "CompanyName": offer["companyName"],
         "SourceSite": SOURCE_SITE_JUST_JOIN_IT,
-        "Skills": offer.get("requiredSkills"),
+        "Skills": _skills(offer),
         "WorkplaceTypes": _workplace_types(offer),
         "ExperienceLevels": _experience_levels(offer),
         "Locations": _locations(offer),
@@ -20,6 +20,13 @@ def map_offer(offer: dict) -> dict:
         "PublishedAt": offer.get("publishedAt"),
         "LogoUrl": offer.get("companyLogoThumbUrl"),
     }
+
+
+def _skills(offer: dict) -> list[str] | None:
+    skills = offer.get("requiredSkills")
+    if skills is None:
+        return None
+    return [skill["name"] for skill in skills if skill.get("name")]
 
 
 def _workplace_types(offer: dict) -> list[str] | None:
@@ -37,7 +44,7 @@ def _experience_levels(offer: dict) -> list[str] | None:
 
 
 def _locations(offer: dict) -> list[str] | None:
-    cities = [location.get("city") for location in offer.get("multilocation") or []]
+    cities = [location.get("city") for location in offer.get("locations") or []]
     cities.append(offer.get("city"))
     unique = list(dict.fromkeys(city for city in cities if city and city.strip()))
     return unique or None
@@ -55,4 +62,6 @@ def _salaries(offer: dict) -> list[dict] | None:
             "ContractType": employment_type.get("type"),
         }
         for employment_type in employment_types
+        # The API also returns each salary converted to other currencies
+        if employment_type.get("currencySource") != "conversion"
     ]
