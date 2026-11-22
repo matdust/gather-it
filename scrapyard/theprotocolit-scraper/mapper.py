@@ -1,5 +1,6 @@
 SOURCE_SITE_THE_PROTOCOL_IT = 1
 
+
 def map_offers(offers: list[dict]) -> list[dict]:
     return [map_offer(offer) for offer in offers]
 
@@ -16,9 +17,19 @@ def map_offer(offer: dict) -> dict:
         "ExperienceLevels": _experience_levels(offer),
         "Locations": _locations(offer),
         "Salaries": _salaries(offer),
-        "PublishedAt": offer.get("publicationDateUtc"),
+        "PublishedAt": _published_at(offer),
         "LogoUrl": offer.get("logoUrl"),
     }
+
+
+def _published_at(offer: dict) -> str | None:
+    published_at = offer.get("publicationDateUtc")
+    if not published_at:
+        return None
+    # The API returns UTC timestamps without an offset, which binder rejects
+    if published_at.endswith("Z") or "+" in published_at[10:]:
+        return published_at
+    return f"{published_at}Z"
 
 
 def _experience_levels(offer: dict) -> list[str] | None:

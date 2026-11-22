@@ -12,11 +12,34 @@ logger = logging.getLogger(__name__)
 
 REQUEST_TIMEOUT_SECONDS = 30
 PAGE_DELAY_SECONDS = 0.3
+# The search endpoint requires a filter body; empty filters return every offer
+SEARCH_FILTERS = {
+    "typesOfContractIds": [],
+    "positionLevelIds": [],
+    "cities": [],
+    "workModeCodes": [],
+    "onlyWithProjectDescription": False,
+    "expectedTechnologies": [],
+    "niceToHaveTechnologies": [],
+    "excludedTechnologies": [],
+    "regionsOfWorld": [],
+    "keywords": [],
+    "specializationsCodes": [],
+    "isSupportingUkraine": False,
+    "fromExternalLocations": False,
+}
 
 
 def http_headers() -> dict:
+    # Cloudflare challenges requests that don't look like they come from a browser
     return {
+        "User-Agent": os.environ["TP_USER_AGENT"],
+        "Accept": "application/json, text/plain, */*",
+        "Accept-Language": "en-US,en;q=0.9",
+        "Origin": "https://theprotocol.it",
+        "Referer": "https://theprotocol.it/",
         "Cache-Control": "no-cache",
+        "X-Application-Name": "theprotocol-offers",
         "x-xsrf-token": os.environ["TP_XSRF_TOKEN"],
         "Cookie": os.environ["TP_COOKIE"],
     }
@@ -52,10 +75,6 @@ async def start_scraping() -> int:
 
 
 async def fetch_page(client: httpx.AsyncClient, api_url: str, page_number: int) -> dict:
-    response = await client.post(
-        f"{api_url}{page_number}",
-        content=b"",
-        headers={"Content-Type": "application/json; charset=utf-8"},
-    )
+    response = await client.post(f"{api_url}{page_number}", json=SEARCH_FILTERS)
     response.raise_for_status()
     return response.json()
