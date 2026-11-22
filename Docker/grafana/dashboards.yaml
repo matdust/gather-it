@@ -1,0 +1,9 @@
+apiVersion: 1
+
+providers:
+  - name: gather-it
+    type: file
+    folder: gather.it
+    updateIntervalSeconds: 30
+    options:
+      path: /otel-lgtm/gather-it-dashboards

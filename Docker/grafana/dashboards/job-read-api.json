@@ -1,0 +1,605 @@
+{
+    "uid": "gather-it-job-read-api",
+    "title": "gather.it / JobReadApi runtime",
+    "description": ".NET runtime metrics for JobReadApi.",
+    "tags": [
+        "gather-it"
+    ],
+    "editable": true,
+    "graphTooltip": 1,
+    "schemaVersion": 41,
+    "version": 1,
+    "time": {
+        "from": "now-6h",
+        "to": "now"
+    },
+    "refresh": "1m",
+    "templating": {
+        "list": []
+    },
+    "annotations": {
+        "list": []
+    },
+    "links": [
+        {
+            "type": "dashboards",
+            "tags": [
+                "gather-it"
+            ],
+            "asDropdown": true,
+            "title": "gather.it"
+        }
+    ],
+    "panels": [
+        {
+            "type": "row",
+            "title": "Process",
+            "collapsed": false,
+            "panels": [],
+            "id": 1,
+            "gridPos": {
+                "x": 0,
+                "y": 0,
+                "w": 24,
+                "h": 1
+            }
+        },
+        {
+            "type": "timeseries",
+            "title": "CPU usage",
+            "description": "Fraction of one core",
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "expr": "sum by (cpu_mode) (rate(dotnet_process_cpu_time_seconds_total{service_name=\"job-read-api\"}[$__rate_interval]))",
+                    "legendFormat": "{{cpu_mode}}",
+                    "refId": "A"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "percentunit",
+                    "custom": {
+                        "drawStyle": "line",
+                        "fillOpacity": 10,
+                        "lineWidth": 1,
+                        "showPoints": "never",
+                        "spanNulls": false,
+                        "stacking": {
+                            "mode": "normal",
+                            "group": "A"
+                        }
+                    },
+                    "min": 0
+                },
+                "overrides": []
+            },
+            "options": {
+                "legend": {
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "id": 2,
+            "gridPos": {
+                "x": 0,
+                "y": 1,
+                "w": 8,
+                "h": 8
+            }
+        },
+        {
+            "type": "timeseries",
+            "title": "Working set",
+            "description": "",
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "expr": "dotnet_process_memory_working_set_bytes{service_name=\"job-read-api\"}",
+                    "legendFormat": "working set",
+                    "refId": "A"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "bytes",
+                    "custom": {
+                        "drawStyle": "line",
+                        "fillOpacity": 10,
+                        "lineWidth": 1,
+                        "showPoints": "never",
+                        "spanNulls": false,
+                        "stacking": {
+                            "mode": "none",
+                            "group": "A"
+                        }
+                    },
+                    "min": 0
+                },
+                "overrides": []
+            },
+            "options": {
+                "legend": {
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "id": 3,
+            "gridPos": {
+                "x": 8,
+                "y": 1,
+                "w": 8,
+                "h": 8
+            }
+        },
+        {
+            "type": "timeseries",
+            "title": "Exceptions",
+            "description": "",
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "expr": "sum by (error_type) (increase(dotnet_exceptions_total{service_name=\"job-read-api\"}[$__rate_interval]))",
+                    "legendFormat": "{{error_type}}",
+                    "refId": "A"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "short",
+                    "custom": {
+                        "drawStyle": "bars",
+                        "fillOpacity": 60,
+                        "lineWidth": 1,
+                        "showPoints": "never",
+                        "spanNulls": false,
+                        "stacking": {
+                            "mode": "normal",
+                            "group": "A"
+                        }
+                    },
+                    "min": 0
+                },
+                "overrides": []
+            },
+            "options": {
+                "legend": {
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "id": 4,
+            "gridPos": {
+                "x": 16,
+                "y": 1,
+                "w": 8,
+                "h": 8
+            }
+        },
+        {
+            "type": "row",
+            "title": "GC",
+            "collapsed": false,
+            "panels": [],
+            "id": 5,
+            "gridPos": {
+                "x": 0,
+                "y": 9,
+                "w": 24,
+                "h": 1
+            }
+        },
+        {
+            "type": "timeseries",
+            "title": "Heap size by generation (after last GC)",
+            "description": "",
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "expr": "dotnet_gc_last_collection_heap_size_bytes{service_name=\"job-read-api\"}",
+                    "legendFormat": "{{gc_heap_generation}}",
+                    "refId": "A"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "bytes",
+                    "custom": {
+                        "drawStyle": "line",
+                        "fillOpacity": 10,
+                        "lineWidth": 1,
+                        "showPoints": "never",
+                        "spanNulls": false,
+                        "stacking": {
+                            "mode": "normal",
+                            "group": "A"
+                        }
+                    },
+                    "min": 0
+                },
+                "overrides": []
+            },
+            "options": {
+                "legend": {
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "id": 6,
+            "gridPos": {
+                "x": 0,
+                "y": 10,
+                "w": 8,
+                "h": 8
+            }
+        },
+        {
+            "type": "timeseries",
+            "title": "Collections by generation",
+            "description": "",
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "expr": "sum by (gc_heap_generation) (increase(dotnet_gc_collections_total{service_name=\"job-read-api\"}[$__rate_interval]))",
+                    "legendFormat": "{{gc_heap_generation}}",
+                    "refId": "A"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "short",
+                    "custom": {
+                        "drawStyle": "bars",
+                        "fillOpacity": 60,
+                        "lineWidth": 1,
+                        "showPoints": "never",
+                        "spanNulls": false,
+                        "stacking": {
+                            "mode": "normal",
+                            "group": "A"
+                        }
+                    },
+                    "min": 0
+                },
+                "overrides": []
+            },
+            "options": {
+                "legend": {
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "id": 7,
+            "gridPos": {
+                "x": 8,
+                "y": 10,
+                "w": 8,
+                "h": 8
+            }
+        },
+        {
+            "type": "timeseries",
+            "title": "GC pause time",
+            "description": "Fraction of wall time spent paused in GC",
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "expr": "rate(dotnet_gc_pause_time_seconds_total{service_name=\"job-read-api\"}[$__rate_interval])",
+                    "legendFormat": "paused",
+                    "refId": "A"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "percentunit",
+                    "custom": {
+                        "drawStyle": "line",
+                        "fillOpacity": 10,
+                        "lineWidth": 1,
+                        "showPoints": "never",
+                        "spanNulls": false,
+                        "stacking": {
+                            "mode": "none",
+                            "group": "A"
+                        }
+                    },
+                    "min": 0
+                },
+                "overrides": []
+            },
+            "options": {
+                "legend": {
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "id": 8,
+            "gridPos": {
+                "x": 16,
+                "y": 10,
+                "w": 8,
+                "h": 8
+            }
+        },
+        {
+            "type": "row",
+            "title": "Threads & connections",
+            "collapsed": false,
+            "panels": [],
+            "id": 9,
+            "gridPos": {
+                "x": 0,
+                "y": 18,
+                "w": 24,
+                "h": 1
+            }
+        },
+        {
+            "type": "timeseries",
+            "title": "Thread pool",
+            "description": "",
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "expr": "dotnet_thread_pool_thread_count{service_name=\"job-read-api\"}",
+                    "legendFormat": "threads",
+                    "refId": "A"
+                },
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "expr": "dotnet_thread_pool_queue_length{service_name=\"job-read-api\"}",
+                    "legendFormat": "queued work items",
+                    "refId": "B"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "short",
+                    "custom": {
+                        "drawStyle": "line",
+                        "fillOpacity": 10,
+                        "lineWidth": 1,
+                        "showPoints": "never",
+                        "spanNulls": false,
+                        "stacking": {
+                            "mode": "none",
+                            "group": "A"
+                        }
+                    },
+                    "min": 0
+                },
+                "overrides": []
+            },
+            "options": {
+                "legend": {
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "id": 10,
+            "gridPos": {
+                "x": 0,
+                "y": 19,
+                "w": 8,
+                "h": 8
+            }
+        },
+        {
+            "type": "timeseries",
+            "title": "Kestrel connections",
+            "description": "",
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "expr": "kestrel_active_connections{service_name=\"job-read-api\"}",
+                    "legendFormat": "active",
+                    "refId": "A"
+                },
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "expr": "kestrel_queued_connections{service_name=\"job-read-api\"}",
+                    "legendFormat": "queued",
+                    "refId": "B"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "short",
+                    "custom": {
+                        "drawStyle": "line",
+                        "fillOpacity": 10,
+                        "lineWidth": 1,
+                        "showPoints": "never",
+                        "spanNulls": false,
+                        "stacking": {
+                            "mode": "none",
+                            "group": "A"
+                        }
+                    },
+                    "min": 0
+                },
+                "overrides": []
+            },
+            "options": {
+                "legend": {
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "id": 11,
+            "gridPos": {
+                "x": 8,
+                "y": 19,
+                "w": 8,
+                "h": 8
+            }
+        },
+        {
+            "type": "timeseries",
+            "title": "In-flight requests",
+            "description": "",
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "expr": "sum(http_server_active_requests{service_name=\"job-read-api\"})",
+                    "legendFormat": "server",
+                    "refId": "A"
+                },
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "expr": "sum(http_client_active_requests{service_name=\"job-read-api\"})",
+                    "legendFormat": "client",
+                    "refId": "B"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "short",
+                    "custom": {
+                        "drawStyle": "line",
+                        "fillOpacity": 10,
+                        "lineWidth": 1,
+                        "showPoints": "never",
+                        "spanNulls": false,
+                        "stacking": {
+                            "mode": "none",
+                            "group": "A"
+                        }
+                    },
+                    "min": 0
+                },
+                "overrides": []
+            },
+            "options": {
+                "legend": {
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "id": 12,
+            "gridPos": {
+                "x": 16,
+                "y": 19,
+                "w": 8,
+                "h": 8
+            }
+        }
+    ]
+}

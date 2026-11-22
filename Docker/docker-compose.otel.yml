@@ -17,6 +17,8 @@ services:
       - "4318:4318"
     volumes:
       - otel-lgtm-data:/data
+      - ./grafana/dashboards.yaml:/otel-lgtm/grafana/conf/provisioning/dashboards/gather-it.yaml:ro
+      - ./grafana/dashboards:/otel-lgtm/gather-it-dashboards:ro
     healthcheck:
       start_period: 1m
       start_interval: 2s

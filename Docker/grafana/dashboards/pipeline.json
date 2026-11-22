@@ -1,0 +1,1139 @@
+{
+    "uid": "gather-it-pipeline",
+    "title": "gather.it / Pipeline",
+    "description": "Scheduler -> scrapers -> RabbitMQ -> binder.",
+    "tags": [
+        "gather-it"
+    ],
+    "editable": true,
+    "graphTooltip": 1,
+    "schemaVersion": 41,
+    "version": 1,
+    "time": {
+        "from": "now-2d",
+        "to": "now"
+    },
+    "refresh": "1m",
+    "templating": {
+        "list": []
+    },
+    "annotations": {
+        "list": []
+    },
+    "links": [
+        {
+            "type": "dashboards",
+            "tags": [
+                "gather-it"
+            ],
+            "asDropdown": true,
+            "title": "gather.it"
+        }
+    ],
+    "panels": [
+        {
+            "type": "row",
+            "title": "Totals in selected range",
+            "collapsed": false,
+            "panels": [],
+            "id": 1,
+            "gridPos": {
+                "x": 0,
+                "y": 0,
+                "w": 24,
+                "h": 1
+            }
+        },
+        {
+            "type": "stat",
+            "title": "Scrapes completed",
+            "description": "",
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "expr": "sum(increase(scheduler_worker_triggers_total{outcome=\"completed\"}[$__range]))",
+                    "legendFormat": "__auto",
+                    "refId": "A",
+                    "instant": true,
+                    "range": false
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "short",
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "noValue": "0",
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "options": {
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "colorMode": "background",
+                "graphMode": "none",
+                "textMode": "value",
+                "justifyMode": "center"
+            },
+            "id": 2,
+            "gridPos": {
+                "x": 0,
+                "y": 1,
+                "w": 4,
+                "h": 4
+            }
+        },
+        {
+            "type": "stat",
+            "title": "Scrapes failed",
+            "description": "",
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "expr": "sum(increase(scheduler_worker_triggers_total{outcome=\"failed\"}[$__range]))",
+                    "legendFormat": "__auto",
+                    "refId": "A",
+                    "instant": true,
+                    "range": false
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "short",
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "noValue": "0",
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "red",
+                                "value": 1
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "options": {
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "colorMode": "background",
+                "graphMode": "none",
+                "textMode": "value",
+                "justifyMode": "center"
+            },
+            "id": 3,
+            "gridPos": {
+                "x": 4,
+                "y": 1,
+                "w": 4,
+                "h": 4
+            }
+        },
+        {
+            "type": "stat",
+            "title": "Messages rejected",
+            "description": "Messages binder failed to deserialize (written to failed_payloads/)",
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "expr": "sum(increase(binder_messages_received_total{outcome=\"rejected\"}[$__range]))",
+                    "legendFormat": "__auto",
+                    "refId": "A",
+                    "instant": true,
+                    "range": false
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "short",
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "noValue": "0",
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "red",
+                                "value": 1
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "options": {
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "colorMode": "background",
+                "graphMode": "none",
+                "textMode": "value",
+                "justifyMode": "center"
+            },
+            "id": 4,
+            "gridPos": {
+                "x": 8,
+                "y": 1,
+                "w": 4,
+                "h": 4
+            }
+        },
+        {
+            "type": "stat",
+            "title": "Ads received",
+            "description": "",
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "expr": "sum(increase(binder_job_ads_received_total{}[$__range]))",
+                    "legendFormat": "__auto",
+                    "refId": "A",
+                    "instant": true,
+                    "range": false
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "short",
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "noValue": "0",
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "blue",
+                                "value": null
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "options": {
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "colorMode": "background",
+                "graphMode": "none",
+                "textMode": "value",
+                "justifyMode": "center"
+            },
+            "id": 5,
+            "gridPos": {
+                "x": 12,
+                "y": 1,
+                "w": 4,
+                "h": 4
+            }
+        },
+        {
+            "type": "stat",
+            "title": "Ads inserted",
+            "description": "",
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "expr": "sum(increase(binder_job_ads_inserted_total{}[$__range]))",
+                    "legendFormat": "__auto",
+                    "refId": "A",
+                    "instant": true,
+                    "range": false
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "short",
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "noValue": "0",
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "options": {
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "colorMode": "background",
+                "graphMode": "none",
+                "textMode": "value",
+                "justifyMode": "center"
+            },
+            "id": 6,
+            "gridPos": {
+                "x": 16,
+                "y": 1,
+                "w": 4,
+                "h": 4
+            }
+        },
+        {
+            "type": "stat",
+            "title": "Flush retries",
+            "description": "Failed DB flush attempts that binder retried",
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "expr": "sum(increase(binder_flush_retries_total{}[$__range]))",
+                    "legendFormat": "__auto",
+                    "refId": "A",
+                    "instant": true,
+                    "range": false
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "short",
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "noValue": "0",
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "orange",
+                                "value": 1
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "options": {
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "colorMode": "background",
+                "graphMode": "none",
+                "textMode": "value",
+                "justifyMode": "center"
+            },
+            "id": 7,
+            "gridPos": {
+                "x": 20,
+                "y": 1,
+                "w": 4,
+                "h": 4
+            }
+        },
+        {
+            "type": "row",
+            "title": "Scheduler",
+            "collapsed": false,
+            "panels": [],
+            "id": 8,
+            "gridPos": {
+                "x": 0,
+                "y": 5,
+                "w": 24,
+                "h": 1
+            }
+        },
+        {
+            "type": "timeseries",
+            "title": "Scrape triggers by worker",
+            "description": "",
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "expr": "sum by (worker, outcome) (increase(scheduler_worker_triggers_total[$__rate_interval]))",
+                    "legendFormat": "{{worker}} {{outcome}}",
+                    "refId": "A"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "short",
+                    "custom": {
+                        "drawStyle": "bars",
+                        "fillOpacity": 60,
+                        "lineWidth": 1,
+                        "showPoints": "never",
+                        "spanNulls": false,
+                        "stacking": {
+                            "mode": "none",
+                            "group": "A"
+                        }
+                    },
+                    "min": 0
+                },
+                "overrides": []
+            },
+            "options": {
+                "legend": {
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "id": 9,
+            "gridPos": {
+                "x": 0,
+                "y": 6,
+                "w": 12,
+                "h": 8
+            }
+        },
+        {
+            "type": "bargauge",
+            "title": "Avg trigger duration by worker (range)",
+            "description": "Time until a worker answered GET /scrap. The scheduler times out at 2 min.",
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "expr": "sum by (worker) (increase(scheduler_worker_trigger_duration_seconds_sum[$__range])) / sum by (worker) (increase(scheduler_worker_trigger_duration_seconds_count[$__range]))",
+                    "legendFormat": "{{worker}}",
+                    "refId": "A",
+                    "instant": true,
+                    "range": false
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "s",
+                    "min": 0,
+                    "color": {
+                        "mode": "continuous-BlYlRd"
+                    }
+                },
+                "overrides": []
+            },
+            "options": {
+                "orientation": "horizontal",
+                "displayMode": "gradient",
+                "showUnfilled": true,
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                }
+            },
+            "id": 10,
+            "gridPos": {
+                "x": 12,
+                "y": 6,
+                "w": 12,
+                "h": 8
+            }
+        },
+        {
+            "type": "row",
+            "title": "Scrapers (pracuj-scraper)",
+            "collapsed": false,
+            "panels": [],
+            "id": 11,
+            "gridPos": {
+                "x": 0,
+                "y": 14,
+                "w": 24,
+                "h": 1
+            }
+        },
+        {
+            "type": "timeseries",
+            "title": "Listing pages fetched",
+            "description": "",
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "expr": "sum by (outcome) (increase(scraper_pages_fetched_total[$__rate_interval]))",
+                    "legendFormat": "{{outcome}}",
+                    "refId": "A"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "short",
+                    "custom": {
+                        "drawStyle": "bars",
+                        "fillOpacity": 60,
+                        "lineWidth": 1,
+                        "showPoints": "never",
+                        "spanNulls": false,
+                        "stacking": {
+                            "mode": "normal",
+                            "group": "A"
+                        }
+                    },
+                    "min": 0
+                },
+                "overrides": [
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "ok"
+                        },
+                        "properties": [
+                            {
+                                "id": "color",
+                                "value": {
+                                    "mode": "fixed",
+                                    "fixedColor": "green"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "error"
+                        },
+                        "properties": [
+                            {
+                                "id": "color",
+                                "value": {
+                                    "mode": "fixed",
+                                    "fixedColor": "red"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            },
+            "options": {
+                "legend": {
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "id": 12,
+            "gridPos": {
+                "x": 0,
+                "y": 15,
+                "w": 8,
+                "h": 8
+            }
+        },
+        {
+            "type": "timeseries",
+            "title": "Offers scraped vs published",
+            "description": "",
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "expr": "sum(increase(scraper_offers_scraped_total[$__rate_interval]))",
+                    "legendFormat": "scraped",
+                    "refId": "A"
+                },
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "expr": "sum(increase(scraper_offers_published_total[$__rate_interval]))",
+                    "legendFormat": "published",
+                    "refId": "B"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "short",
+                    "custom": {
+                        "drawStyle": "bars",
+                        "fillOpacity": 60,
+                        "lineWidth": 1,
+                        "showPoints": "never",
+                        "spanNulls": false,
+                        "stacking": {
+                            "mode": "none",
+                            "group": "A"
+                        }
+                    },
+                    "min": 0
+                },
+                "overrides": []
+            },
+            "options": {
+                "legend": {
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "id": 13,
+            "gridPos": {
+                "x": 8,
+                "y": 15,
+                "w": 8,
+                "h": 8
+            }
+        },
+        {
+            "type": "timeseries",
+            "title": "Scrape run duration",
+            "description": "",
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "expr": "sum by (outcome) (increase(scraper_run_duration_seconds_sum[$__rate_interval])) / sum by (outcome) (increase(scraper_run_duration_seconds_count[$__rate_interval]))",
+                    "legendFormat": "{{outcome}}",
+                    "refId": "A"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "s",
+                    "custom": {
+                        "drawStyle": "bars",
+                        "fillOpacity": 60,
+                        "lineWidth": 1,
+                        "showPoints": "never",
+                        "spanNulls": false,
+                        "stacking": {
+                            "mode": "none",
+                            "group": "A"
+                        }
+                    },
+                    "min": 0
+                },
+                "overrides": []
+            },
+            "options": {
+                "legend": {
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "id": 14,
+            "gridPos": {
+                "x": 16,
+                "y": 15,
+                "w": 8,
+                "h": 8
+            }
+        },
+        {
+            "type": "row",
+            "title": "Binder",
+            "collapsed": false,
+            "panels": [],
+            "id": 15,
+            "gridPos": {
+                "x": 0,
+                "y": 23,
+                "w": 24,
+                "h": 1
+            }
+        },
+        {
+            "type": "timeseries",
+            "title": "Messages consumed",
+            "description": "",
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "expr": "sum by (outcome) (increase(binder_messages_received_total[$__rate_interval]))",
+                    "legendFormat": "{{outcome}}",
+                    "refId": "A"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "short",
+                    "custom": {
+                        "drawStyle": "bars",
+                        "fillOpacity": 60,
+                        "lineWidth": 1,
+                        "showPoints": "never",
+                        "spanNulls": false,
+                        "stacking": {
+                            "mode": "normal",
+                            "group": "A"
+                        }
+                    },
+                    "min": 0
+                },
+                "overrides": [
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "accepted"
+                        },
+                        "properties": [
+                            {
+                                "id": "color",
+                                "value": {
+                                    "mode": "fixed",
+                                    "fixedColor": "green"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "rejected"
+                        },
+                        "properties": [
+                            {
+                                "id": "color",
+                                "value": {
+                                    "mode": "fixed",
+                                    "fixedColor": "red"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            },
+            "options": {
+                "legend": {
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "id": 16,
+            "gridPos": {
+                "x": 0,
+                "y": 24,
+                "w": 8,
+                "h": 8
+            }
+        },
+        {
+            "type": "timeseries",
+            "title": "Job ads",
+            "description": "",
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "expr": "sum(increase(binder_job_ads_received_total[$__rate_interval]))",
+                    "legendFormat": "received",
+                    "refId": "A"
+                },
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "expr": "sum(increase(binder_job_ads_inserted_total[$__rate_interval]))",
+                    "legendFormat": "inserted",
+                    "refId": "B"
+                },
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "expr": "sum(increase(binder_job_ads_skipped_total[$__rate_interval]))",
+                    "legendFormat": "skipped (duplicate)",
+                    "refId": "C"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "short",
+                    "custom": {
+                        "drawStyle": "bars",
+                        "fillOpacity": 60,
+                        "lineWidth": 1,
+                        "showPoints": "never",
+                        "spanNulls": false,
+                        "stacking": {
+                            "mode": "none",
+                            "group": "A"
+                        }
+                    },
+                    "min": 0
+                },
+                "overrides": []
+            },
+            "options": {
+                "legend": {
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "id": 17,
+            "gridPos": {
+                "x": 8,
+                "y": 24,
+                "w": 8,
+                "h": 8
+            }
+        },
+        {
+            "type": "timeseries",
+            "title": "Flush duration p95 by trigger",
+            "description": "",
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "expr": "histogram_quantile(0.95, sum by (le, trigger) (rate(binder_flush_duration_seconds_bucket[$__rate_interval])))",
+                    "legendFormat": "{{trigger}}",
+                    "refId": "A"
+                },
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "expr": "sum(increase(binder_flush_retries_total[$__rate_interval]))",
+                    "legendFormat": "retries",
+                    "refId": "B"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "s",
+                    "custom": {
+                        "drawStyle": "line",
+                        "fillOpacity": 10,
+                        "lineWidth": 1,
+                        "showPoints": "never",
+                        "spanNulls": false,
+                        "stacking": {
+                            "mode": "none",
+                            "group": "A"
+                        }
+                    },
+                    "min": 0
+                },
+                "overrides": [
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "retries"
+                        },
+                        "properties": [
+                            {
+                                "id": "unit",
+                                "value": "short"
+                            },
+                            {
+                                "id": "custom.axisPlacement",
+                                "value": "right"
+                            },
+                            {
+                                "id": "color",
+                                "value": {
+                                    "mode": "fixed",
+                                    "fixedColor": "orange"
+                                }
+                            },
+                            {
+                                "id": "custom.drawStyle",
+                                "value": "bars"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "options": {
+                "legend": {
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "id": 18,
+            "gridPos": {
+                "x": 16,
+                "y": 24,
+                "w": 8,
+                "h": 8
+            }
+        },
+        {
+            "type": "row",
+            "title": "Logs",
+            "collapsed": false,
+            "panels": [],
+            "id": 19,
+            "gridPos": {
+                "x": 0,
+                "y": 32,
+                "w": 24,
+                "h": 1
+            }
+        },
+        {
+            "type": "timeseries",
+            "title": "Warnings & errors by service",
+            "description": "",
+            "datasource": {
+                "type": "loki",
+                "uid": "loki"
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "loki",
+                        "uid": "loki"
+                    },
+                    "expr": "sum by (service_name, detected_level) (count_over_time({service_namespace=\"gather-it\"} | detected_level=~\"error|warn\" [$__auto]))",
+                    "legendFormat": "{{service_name}} {{detected_level}}",
+                    "refId": "A"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "short",
+                    "custom": {
+                        "drawStyle": "bars",
+                        "fillOpacity": 60,
+                        "lineWidth": 1,
+                        "showPoints": "never",
+                        "spanNulls": false,
+                        "stacking": {
+                            "mode": "normal",
+                            "group": "A"
+                        }
+                    },
+                    "min": 0
+                },
+                "overrides": []
+            },
+            "options": {
+                "legend": {
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "id": 20,
+            "gridPos": {
+                "x": 0,
+                "y": 33,
+                "w": 24,
+                "h": 7
+            }
+        },
+        {
+            "type": "logs",
+            "title": "Recent warnings & errors",
+            "datasource": {
+                "type": "loki",
+                "uid": "loki"
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "loki",
+                        "uid": "loki"
+                    },
+                    "expr": "{service_namespace=\"gather-it\"} | detected_level=~\"error|warn\"",
+                    "legendFormat": "__auto",
+                    "refId": "A"
+                }
+            ],
+            "options": {
+                "showTime": true,
+                "showLabels": false,
+                "showCommonLabels": false,
+                "wrapLogMessage": true,
+                "prettifyLogMessage": false,
+                "enableLogDetails": true,
+                "sortOrder": "Descending",
+                "dedupStrategy": "none"
+            },
+            "id": 21,
+            "gridPos": {
+                "x": 0,
+                "y": 40,
+                "w": 24,
+                "h": 12
+            }
+        }
+    ]
+}
